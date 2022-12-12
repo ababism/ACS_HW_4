@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <pthread.h>
+#include <fstream>
 
 size_t string_size;
 char *end_of_string;
@@ -40,21 +41,29 @@ void *func(void *param) {
 
 int main(int argc, char *argv[]) {
     std::string input_string;
-
     if (argc == 1) {
         std::cout << "Введите зашифрованную строку:";
         std::cin >> input_string;
     } else if (argc == 2) {
         input_string = argv[1];
     } else if (argc == 3) {
-        FILE *input_stream = fopen(argv[1], "r");
-        if (input_stream == NULL) {
+//        FILE *input_stream = fopen(argv[1], "r");
+//        if (input_stream == NULL) {
+//            printf("Could not open file. Press any key to exit");
+//            getchar();
+//            return 0;
+//        }
+//        fscanf(input_stream, "%s", input_string.data());
+//        fclose(input_stream);
+        std::ifstream ifstream;
+        ifstream.open(argv[1]);
+        if (!ifstream.is_open() ){
             printf("Could not open file. Press any key to exit");
             getchar();
             return 0;
         }
-        fscanf(input_stream, "%s", input_string.data());
-        fclose(input_stream);
+        std::getline (ifstream, input_string);
+        ifstream.close();
     }
     const std::string encrypted = input_string;
     //    const std::string encrypted("Wklv#wh{w#vkrxog#eh#hqfu|swhg");
