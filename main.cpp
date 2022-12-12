@@ -12,8 +12,8 @@ char *end_it;
 pthread_mutex_t mutex;// мьютекс для условных переменных
 
 void *func(void *param) {
-    std::cout << "start\n";
-    int p = *(int *) param;  //номер потока
+    int thr_number = *(int *) param;  //номер потока
+//    std::cout << "start" << thr_number << "\n";
     char *left_it;
     char *right_it;
     do {
@@ -28,8 +28,8 @@ void *func(void *param) {
         } else {
             end_it = end_it + step;
         }
-        std::cout << param << ": " << *left_it << " and " << *right_it << '\n';
         //конец критической секции
+//        std::cout << thr_number << ": " << *left_it << " and " << *right_it << '\n';
         pthread_mutex_unlock(&mutex);  //протокол выхода из КС:
         //открыть двоичный семафор
         for (char *it = left_it; it < right_it; ++it) {
@@ -57,17 +57,15 @@ int main(int argc, char *argv[]) {
 //        fclose(input_stream);
         std::ifstream ifstream;
         ifstream.open(argv[1]);
-        if (!ifstream.is_open() ){
+        if (!ifstream.is_open()) {
             printf("Could not open file. Press any key to exit");
             getchar();
             return 0;
         }
-        std::getline (ifstream, input_string);
+        std::getline(ifstream, input_string);
         ifstream.close();
     }
     const std::string encrypted = input_string;
-    //    const std::string encrypted("Wklv#wh{w#vkrxog#eh#hqfu|swhg");
-
     std::string result_text = encrypted;
 
     start_it = &result_text[0];
@@ -75,7 +73,7 @@ int main(int argc, char *argv[]) {
 
     end_of_string = start_it + string_size;
 
-    step = string_size / 3;
+    step = string_size / 5;
     end_it = start_it;
     if (end_it + step >= end_of_string) {
         end_it = end_of_string;
@@ -85,11 +83,6 @@ int main(int argc, char *argv[]) {
 
     pthread_t pthread_first, pthread_second;
     pthread_mutex_init(&mutex, NULL); //инициализация двоичного семафора
-//    char key = 3;
-//    for (auto i = 0; i < text.size(); ++i) {
-//        text[i] = encrypted[i] - 3;
-//    }
-//    step = text.size();
     int num[2];
     num[0] = 1;
     num[1] = 2;
