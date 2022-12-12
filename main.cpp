@@ -3,24 +3,41 @@
 #include <pthread.h>
 #include <fstream>
 
-size_t string_size;
-char *end_of_string;
-size_t step;
+#define CRYPTO_KEY -3
+
+// Глобальные переменные
+size_t string_size; // Размер строки
+char *end_of_string;    // Адресс конца строки
+size_t step;    // Размер куска строки для каждого потока
+
+// Переменные портфеля задач -- границы интервала, который должен будет обработать следующий свободный поток
 char *start_it;
 char *end_it;
 
-pthread_mutex_t mutex;// мьютекс для условных переменных
+pthread_mutex_t mutex;  // мьютекс для условных переменных
 
-void *func(void *param) {
-    int thr_number = *(int *) param;  //номер потока
+// Реализация кодовой таблички
+char codeTableFunction(char encrypted) {
+    if (encrypted <= 3) {
+        return char(0);
+    }
+    return encrypted + CRYPTO_KEY;
+}
+
+// функция для потоков
+void *thread_func(void *param) {
+//    int thr_number = *(int *) param;  // номер потока (нужен для тестов на 9)
 //    std::cout << "start" << thr_number << "\n";
-    char *left_it;
-    char *right_it;
+    char *left_it;  // адесс левой границы интервала, с которым будет работать только этот поток
+    char *right_it; // адесс правой границы интервала, с которым будет работать только поток
     do {
-        pthread_mutex_lock(&mutex); //протокол входа в КС: закрыть двоичный семафор
+        pthread_mutex_lock(&mutex); //протокол входа в КС: закрытие двоичного семафора (мютекс)
         //начало критической секции – обращению в портфелю задач
+        // add проверку и выход из цикла
+        // присваиваем интервалу потока интервал выделенный ему портфелем задач
         left_it = start_it;
         right_it = end_it;
+
         // обновляем значения глобальных переменных портфеля задач
         start_it = end_it;
         if (end_it + step >= end_of_string) {
@@ -28,52 +45,51 @@ void *func(void *param) {
         } else {
             end_it = end_it + step;
         }
+        // (теперь портфель задач хранит интервал для следующего свободного потока)
+
         //конец критической секции
 //        std::cout << thr_number << ": " << *left_it << " and " << *right_it << '\n';
-        pthread_mutex_unlock(&mutex);  //протокол выхода из КС:
-        //открыть двоичный семафор
+        pthread_mutex_unlock(&mutex);  //протокол выхода из КС: произошло открытие двоичного семафора
+
+        // Для куска строки отделенного данному потоку производим дешифрование через таблицу
         for (char *it = left_it; it < right_it; ++it) {
-            *it = (*it - 3);
+            *it = codeTableFunction(*it);
         }
+        // условие повторение обработки следующего кусочка
+        // while true
     } while (end_it < end_of_string);
     return nullptr;
 }
 
 int main(int argc, char *argv[]) {
-    std::string input_string;
-    if (argc == 1) {
+    std::string input_string;   // строка сохраняющая вводные данные
+    if (argc == 1) {        // ввод с консоли
         std::cout << "Введите зашифрованную строку:";
         std::cin >> input_string;
-    } else if (argc == 2) {
+    } else if (argc == 2) {     // ввод с командной строки
         input_string = argv[1];
-    } else if (argc == 3) {
-//        FILE *input_stream = fopen(argv[1], "r");
-//        if (input_stream == NULL) {
-//            printf("Could not open file. Press any key to exit");
-//            getchar();
-//            return 0;
-//        }
-//        fscanf(input_stream, "%s", input_string.data());
-//        fclose(input_stream);
-        std::ifstream ifstream;
-        ifstream.open(argv[1]);
-        if (!ifstream.is_open()) {
+    } else if (argc == 3) {     // ввод с файла
+        std::ifstream input_fstream;    // ifstream
+        input_fstream.open(argv[1]);
+        if (!input_fstream.is_open()) {
             printf("Could not open file. Press any key to exit");
             getchar();
             return 0;
         }
-        std::getline(ifstream, input_string);
-        ifstream.close();
+        std::getline(input_fstream, input_string);  //  ввод строки с файла
+        input_fstream.close();
     }
-    const std::string encrypted = input_string;
-    std::string result_text = encrypted;
+    const std::string encrypted = input_string;     // зашифрованный текст и есть наша строка
+    std::string result_text = encrypted;    // расшифрованный текст, пока он совпадает зашифрованным. Это едитсвенная строка с котороый мы работаем
 
-    start_it = &result_text[0];
-    string_size = result_text.size();
+    // инициализируем глоабльные переменные
+    start_it = &result_text[0]; // адресс левой стороны первого интервала это и есть первый символ стоки
+    string_size = result_text.size();   // размер строки
 
-    end_of_string = start_it + string_size;
+    end_of_string = start_it + string_size; // адресс конца строки (первый симов за строкой '\0')
 
-    step = string_size / 5;
+    step = string_size / 5; // размер кусков строки
+    // задаем  адресс правой стороны первого интервала (куска)
     end_it = start_it;
     if (end_it + step >= end_of_string) {
         end_it = end_of_string;
@@ -81,19 +97,21 @@ int main(int argc, char *argv[]) {
         end_it = end_it + step;
     }
 
-    pthread_t pthread_first, pthread_second;
+    pthread_t pthread_first, pthread_second;        // наши "взаимодествующие равные" потоки
     pthread_mutex_init(&mutex, NULL); //инициализация двоичного семафора
-    int num[2];
-    num[0] = 1;
-    num[1] = 2;
-    pthread_create(&pthread_first, NULL, func, (void *) (num));
-    pthread_create(&pthread_second, NULL, func, (void *) (num + 1));
+    int num[2]{1, 2}; // номера потоков (нужно для дебага, например в задании на 9)
 
+    // создаем потоки
+    pthread_create(&pthread_first, NULL, thread_func, (void *) (num));
+    pthread_create(&pthread_second, NULL, thread_func, (void *) (num + 1));
+
+    // ожидаем завершение потоков
     pthread_join(pthread_first, nullptr);
     pthread_join(pthread_second, nullptr);
 
+    // вывод измененной потоками строки содержашей ответ
     std::cout << result_text << std::endl;
-    if (argc == 3) {
+    if (argc == 3) {    // вывод в файл если надо
         FILE *output_stream = fopen(argv[2], "w");
         fprintf(output_stream, "%s", result_text.data());
         fclose(output_stream);
