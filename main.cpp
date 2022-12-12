@@ -2,7 +2,6 @@
 #include <string>
 #include <pthread.h>
 
-//char *p_string;
 size_t string_size;
 char *end_of_string;
 size_t step;
@@ -32,19 +31,38 @@ void *func(void *param) {
         //конец критической секции
         pthread_mutex_unlock(&mutex);  //протокол выхода из КС:
         //открыть двоичный семафор
-        for (char* it = left_it; it < right_it; ++it) {
+        for (char *it = left_it; it < right_it; ++it) {
             *it = (*it - 3);
         }
     } while (end_it < end_of_string);
     return nullptr;
 }
 
-int main() {
-    const std::string encrypted("Wklv#wh{w#vkrxog#eh#hqfu|swhg");
-    std::string text = encrypted;
+int main(int argc, char *argv[]) {
+    std::string input_string;
 
-    start_it = &text[0];
-    string_size = text.size();
+    if (argc == 1) {
+        std::cout << "Введите зашифрованную строку:";
+        std::cin >> input_string;
+    } else if (argc == 2) {
+        input_string = argv[1];
+    } else if (argc == 3) {
+        FILE *input_stream = fopen(argv[1], "r");
+        if (input_stream == NULL) {
+            printf("Could not open file. Press any key to exit");
+            getchar();
+            return 0;
+        }
+        fscanf(input_stream, "%s", input_string.data());
+        fclose(input_stream);
+    }
+    const std::string encrypted = input_string;
+    //    const std::string encrypted("Wklv#wh{w#vkrxog#eh#hqfu|swhg");
+
+    std::string result_text = encrypted;
+
+    start_it = &result_text[0];
+    string_size = result_text.size();
 
     end_of_string = start_it + string_size;
 
@@ -64,15 +82,19 @@ int main() {
 //    }
 //    step = text.size();
     int num[2];
-    num[0]= 1;
+    num[0] = 1;
     num[1] = 2;
-    pthread_create(&pthread_first, NULL, func, (void *)(num)) ;
-    pthread_create(&pthread_second, NULL, func, (void *)(num+1)) ;
+    pthread_create(&pthread_first, NULL, func, (void *) (num));
+    pthread_create(&pthread_second, NULL, func, (void *) (num + 1));
 
     pthread_join(pthread_first, nullptr);
     pthread_join(pthread_second, nullptr);
 
-    std::cout << text << std::endl;
-
+    std::cout << result_text << std::endl;
+    if (argc == 3) {
+        FILE *output_stream = fopen(argv[2], "w");
+        fprintf(output_stream, "%s", result_text.data());
+        fclose(output_stream);
+    }
     return 0;
 }
