@@ -32,8 +32,13 @@ void *thread_func(void *param) {
     char *right_it; // адесс правой границы интервала, с которым будет работать только поток
     do {
         pthread_mutex_lock(&mutex); //протокол входа в КС: закрытие двоичного семафора (мютекс)
-        //начало критической секции – обращению в портфелю задач
-        // add проверку и выход из цикла
+        //начало критической секции – обращения к портфелю задач
+
+        // условие завершения работы потока (интервал не принадлежит строке)
+        if (start_it >= end_of_string) {
+            pthread_mutex_unlock(&mutex);  //выход из КС: открытие двоичного семафора
+            break;
+        }
         // присваиваем интервалу потока интервал выделенный ему портфелем задач
         left_it = start_it;
         right_it = end_it;
@@ -55,9 +60,7 @@ void *thread_func(void *param) {
         for (char *it = left_it; it < right_it; ++it) {
             *it = codeTableFunction(*it);
         }
-        // условие повторение обработки следующего кусочка
-        // while true
-    } while (end_it < end_of_string);
+    } while (true);
     return nullptr;
 }
 
