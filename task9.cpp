@@ -30,16 +30,16 @@ char codeTableFunction(char encrypted) {
 // функция для потоков
 void *thread_func(void *param) {
     int thr_number = *(int *) param;  // номер потока (нужен для тестов на 9)
-    std::cout << "start" << thr_number << "\n";
+//    std::cout << "start" << thr_number << "\n";
     char *left_it;  // адесс левой границы интервала, с которым будет работать только этот поток
     char *right_it; // адесс правой границы интервала, с которым будет работать только поток
     do {
-        pthread_mutex_lock(&mutex); //протокол входа в КС: закрытие двоичного семафора (мютекс)
+//        pthread_mutex_lock(&mutex); //протокол входа в КС: закрытие двоичного семафора (мютекс)
         //начало критической секции – обращения к портфелю задач
 
         // условие завершения работы потока (интервал не принадлежит строке)
         if (start_it >= end_of_string) {
-            pthread_mutex_unlock(&mutex);  //выход из КС: открытие двоичного семафора
+//            pthread_mutex_unlock(&mutex);  //выход из КС: открытие двоичного семафора
             break;
         }
         // присваиваем интервалу потока интервал выделенный ему портфелем задач
@@ -57,7 +57,7 @@ void *thread_func(void *param) {
 
         //конец критической секции
         std::cout << thr_number << ": " << left_it - start_of_string << " and " << right_it - start_of_string << '\n';
-        pthread_mutex_unlock(&mutex);  //протокол выхода из КС: произошло открытие двоичного семафора
+//        pthread_mutex_unlock(&mutex);  //протокол выхода из КС: произошло открытие двоичного семафора
 
         // Для куска строки отделенного данному потоку производим дешифрование через таблицу
         for (char *it = left_it; it < right_it; ++it) {
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     start_of_string = start_it;
     end_of_string = start_it + string_size; // адресс конца строки (первый симов за строкой '\0')
 
-    step = string_size / 5; // размер кусков строки
+    step = string_size / 1000; // размер кусков строки
     // задаем  адресс правой стороны первого интервала (куска)
     end_it = start_it;
     if (end_it + step >= end_of_string) {
@@ -122,11 +122,13 @@ int main(int argc, char *argv[]) {
 
     pthread_t pthread_first, pthread_second;        // наши "взаимодествующие равные" потоки
     pthread_mutex_init(&mutex, NULL); //инициализация двоичного семафора
-    int num[2]{1, 2}; // номера потоков (нужно для дебага, например в задании на 9)
+    int num[4]{1, 2, 3, 4}; // номера потоков (нужно для дебага, например в задании на 9)
 
     // создаем потоки
     pthread_create(&pthread_first, NULL, thread_func, (void *) (num));
     pthread_create(&pthread_second, NULL, thread_func, (void *) (num + 1));
+    pthread_create(&pthread_second, NULL, thread_func, (void *) (num + 2));
+    pthread_create(&pthread_second, NULL, thread_func, (void *) (num + 3));
 
     // ожидаем завершение потоков
     pthread_join(pthread_first, nullptr);
