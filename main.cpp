@@ -4,6 +4,8 @@
 #include <fstream>
 
 #define CRYPTO_KEY -3
+#define RAND_STRING_LENGTH 100
+
 
 // Глобальные переменные
 size_t string_size; // Размер строки
@@ -64,9 +66,25 @@ void *thread_func(void *param) {
     return nullptr;
 }
 
+// генерирует случайную строчку
+std::string createRandomString(int length) {
+    srand(clock());
+    char* ch_arr = new char[length-1];
+    for (int j = 0; j < length; ++j) {
+        ch_arr[j] = (char) (32 + rand() % 92 + 3);
+    }
+    printf("Random string: %s\n", ch_arr);
+    std::string res = ch_arr;
+    return "Wklv#lv#udqgrp#vwulqj=" + res;  // добавим метку, чтобы показать что это строка случаная "This string is random:"
+}
+
 int main(int argc, char *argv[]) {
     std::string input_string;   // строка сохраняющая вводные данные
-    if (argc == 1) {        // ввод с консоли
+
+    // вводим эту строку
+    if (argc == 3 && argv[1][0] == ':') {   // рандомная генерация
+        input_string = createRandomString(RAND_STRING_LENGTH);
+    } else if (argc == 1) {        // ввод с консоли
         std::cout << "Введите зашифрованную строку:";
         std::cin >> input_string;
     } else if (argc == 2) {     // ввод с командной строки
@@ -113,8 +131,8 @@ int main(int argc, char *argv[]) {
     pthread_join(pthread_second, nullptr);
 
     // вывод измененной потоками строки содержашей ответ
-    std::cout << result_text << std::endl;
-    if (argc == 3) {    // вывод в файл если надо
+    std::cout << "Result:\n" << result_text << std::endl;
+    if (argc == 3) {    // вывод в файл если надо (также при рандомной генерации)
         FILE *output_stream = fopen(argv[2], "w");
         fprintf(output_stream, "%s", result_text.data());
         fclose(output_stream);
