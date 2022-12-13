@@ -9,7 +9,7 @@
 > Код послужил основанием для комментариев, доп. комментарии в README.md
 
 ### Тестирование программы и  файлы для тестирования
-[Tests and Files](https://github.com/ababism/ACS_HW_3/tree/main/Tests)
+[Tests and Files](https://github.com/ababism/ACS_HW_4/tree/main/Tests)
 
 
 # О программе
@@ -82,7 +82,7 @@
 
 >✔Ввод данных из командной строки расширен с учетом введенных изменений.
 
-**✔[Tests and Files](https://github.com/ababism/ACS_HW_3/tree/main/Tests)**
+**✔[Tests and Files](https://github.com/ababism/ACS_HW_4/tree/main/Tests)**
 
 • Приведены входные и выходные файлы с различными результатами выполнения программы.
 
@@ -92,7 +92,7 @@
 **✔[Решение задачи на C++](https://github.com/ababism/ACS_HW_4/blob/main/main.cpp)**
 >✔В программу добавлена генерация случайных данных в допустимых диапазонах..
 
->✔[Приведены входные и выходные файлы с различными результатами выполнения программы](https://github.com/ababism/ACS_HW_3/tree/main/Tests).
+>✔[Приведены входные и выходные файлы с различными результатами выполнения программы](https://github.com/ababism/ACS_HW_4/tree/main/Tests).
 
 >✔Результаты работы программы выводятся на экран и записываются в файл.
 
