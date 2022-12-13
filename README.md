@@ -139,6 +139,7 @@ std::cout << thr_number << ": " << left_it - start_of_string << " and " << right
 >}
 ```
 Какой-то другой поток успел присвоить себе тот же интервал A1
+
 ``` c++
  left_it = start_it;
  right_it = end_it;
@@ -151,5 +152,8 @@ std::cout << thr_number << ": " << left_it - start_of_string << " and " << right
 <img width="974" alt="image" src="https://user-images.githubusercontent.com/111705295/207457701-2d8e4559-b95e-4127-a3ee-b572173e2359.png">
 
 Поскольку о нас здесь только один синхропримитив и только в одном месте (спасибо нашей модели), то мы описали все варианты отключения синхропримитивов и что происходит из-за них
+
+**✔[Вот task9.cpp в котором отлючен мютекс и я отлавливал ошибку](https://github.com/ababism/ACS_HW_4/blob/main/main.cpp)**
+
 
 Спасибо за прочтение и курс, было инетересно! :,)
