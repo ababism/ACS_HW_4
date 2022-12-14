@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
     end_of_string = start_it + string_size; // адрес конца строки (первый симов за строкой '\0')
 
     step = string_size / 5; // размер кусков строки
-    // задаем  адресс правой стороны первого интервала (куска)
+    // задаем  адрес правой стороны первого интервала (куска)
     end_it = start_it;
     if (end_it + step >= end_of_string) {
         end_it = end_of_string;
